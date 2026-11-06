@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LE COLIS • Jeu de Bluff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #131620;
+      --border: rgba(255, 255, 255, 0.08);
+      --red: #ff3838;
+      --red-glow: rgba(255, 56, 56, 0.4);
+      --amber: #ff9f1a;
+      --green: #2ed573;
+      --blue: #18dcff;
+      --text: #ffffff;
+      --text-muted: #8b95a5;
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --hell-red: #ff1313;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease;
+    }
+
+    body.hell-active {
+      background-color: #120102;
+    }
+
+    /* Container */
+    #app {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 20px 28px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Top bar */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+    }
+
+    .round-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .round-pill.hell {
+      background: rgba(255, 19, 19, 0.2);
+      border-color: var(--hell-red);
+      color: #ff6b6b;
+      box-shadow: 0 0 15px rgba(255, 19, 19, 0.4);
+      animation: hellGlow 1.2s infinite alternate;
+    }
+
+    @keyframes hellGlow {
+      from { box-shadow: 0 0 8px rgba(255, 19, 19, 0.3); }
+      to { box-shadow: 0 0 25px rgba(255, 19, 19, 0.7); }
+    }
+
+    .sound-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    /* Screens */
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      justify-content: center;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Big Hero Buttons */
+    .btn-giant {
+      width: 100%;
+      border: none;
+      border-radius: 22px;
+      padding: 24px 20px;
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-transform: uppercase;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-giant:active {
+      transform: scale(0.97);
+    }
+
+    .btn-giant-sub {
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: normal;
+      text-transform: none;
+      opacity: 0.85;
+    }
+
+    .btn-red {
+      background: linear-gradient(135deg, var(--red), #b71540);
+      color: #fff;
+      box-shadow: 0 10px 25px var(--red-glow);
+    }
+
+    .btn-blue {
+      background: linear-gradient(135deg, #0984e3, #1e3799);
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(9, 132, 227, 0.35);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, var(--green), #218c74);
+      color: #090a0f;
+      box-shadow: 0 10px 25px rgba(46, 213, 115, 0.35);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-secondary:active { transform: scale(0.97); }
+
+    /* Home Screen */
+    .home-hero {
+      text-align: center;
+      margin: auto 0;
+    }
+
+    .home-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--amber);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .home-title {
+      font-family: var(--font-title);
+      font-size: 3.4rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #ffffff 40%, #a4b0be);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .home-desc {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.5;
+      margin-bottom: 36px;
+    }
+
+    /* HOLD TO REVEAL BOX */
+    .hold-box {
+      width: 100%;
+      height: 200px;
+      border-radius: 26px;
+      background: var(--card);
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      margin-bottom: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .hold-box:active {
+      border-color: var(--blue);
+      transform: scale(0.99);
+    }
+
+    .hold-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(24, 220, 255, 0.3), rgba(24, 220, 255, 0.7));
+      pointer-events: none;
+    }
+
+    .hold-idle-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .hold-idle-icon {
+      font-size: 2.8rem;
+    }
+
+    .hold-idle-text {
+      font-family: var(--font-title);
+      font-size: 1.35rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .hold-idle-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* SECRET OVERLAY */
+    .secret-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0d1b2a, #1b263b);
+      border: 2px solid var(--blue);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      pointer-events: none;
+      box-shadow: inset 0 0 35px rgba(24, 220, 255, 0.3);
+    }
+
+    .secret-number {
+      font-family: var(--font-title);
+      font-size: 4.8rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 25px var(--blue);
+    }
+
+    .secret-unit {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #c7ecee;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* Hell Alert */
+    .hell-warning {
+      background: linear-gradient(135deg, #380005, #75000e);
+      border: 2px solid var(--hell-red);
+      border-radius: 18px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 25px rgba(255, 19, 19, 0.4);
+      animation: hellGlow 1.2s infinite alternate;
+    }
+
+    .hell-warning h3 {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .hell-warning p {
+      font-size: 0.85rem;
+      color: #ffcccc;
+      margin-top: 4px;
+    }
+
+    /* Dilemma Buttons Stack */
+    .dilemma-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    /* Revelation Screen */
+    .reveal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .reveal-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .reveal-val {
+      font-family: var(--font-title);
+      font-size: 3.8rem;
+      font-weight: 900;
+      color: var(--blue);
+      text-shadow: 0 0 20px rgba(24, 220, 255, 0.3);
+      line-height: 1.1;
+    }
+
+    .reveal-sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Decision Box: A-t-il menti ? */
+    .question-title {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    /* Wheel Canvas */
+    .wheel-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin: 10px 0 16px;
+    }
+
+    .wheel-arrow {
+      position: absolute;
+      top: -12px;
+      z-index: 10;
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid #ffffff;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.7));
+    }
+
+    #wheelCanvas {
+      width: 270px;
+      height: 270px;
+      border-radius: 50%;
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Penalty Display */
+    .penalty-box {
+      background: var(--card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .penalty-calc {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .penalty-big {
+      font-family: var(--font-title);
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--red);
+      line-height: 1.1;
+      text-shadow: 0 0 25px var(--red-glow);
+    }
+
+    .penalty-text {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <!-- Top Bar -->
+    <header class="top-header">
+      <div id="roundPill" class="round-pill">
+        <span>📦</span>
+        <span id="roundText">MANCHE 1</span>
+        <span style="opacity: 0.3;">|</span>
+        <span id="hellCountdown">ENFER DANS 5</span>
+      </div>
+      <button id="soundBtn" class="sound-btn" title="Couper/Activer le son">🔊</button>
+    </header>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 1 : ACCUEIL EXPRESS                     -->
+    <!-- ============================================== -->
+    <section id="screenHome" class="screen active">
+      <div class="home-hero">
+        <span class="home-badge">Jeu à boire de pur bluff</span>
+        <h1 class="home-title">LE COLIS</h1>
+        <p class="home-desc">
+          Un colis secret de gorgées circule.<br>
+          Seul l'Annonceur risque la Roue s'il se fait griller !
+        </p>
+      </div>
+
+      <button id="btnStartGame" class="btn-giant btn-red">
+        <span>LANCER LA PARTIE</span>
+        <span class="btn-giant-sub">Préparez vos verres ➔</span>
+      </button>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 2 : REGARDER LE COLIS (Hold to view)    -->
+    <!-- ============================================== -->
+    <section id="screenCarrier" class="screen">
+      <!-- Hell alert (on round 6, 12, etc.) -->
+      <div id="hellAlert" class="hell-warning" style="display: none;">
+        <h3>🚨 ROUE DE L'ENFER 🚨</h3>
+        <p>Multiplicateurs extrêmes (×2 à ×3 + Cul-sec). Zéro case Sauvé !</p>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <h2 style="font-family: var(--font-title); font-size: 1.8rem; font-weight: 900;">TON COLIS SECRET</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Regarde seul sans montrer l'écran aux autres :</p>
+      </div>
+
+      <!-- Maintenir pour voir -->
+      <div id="holdBox" class="hold-box">
+        <div id="holdBar" class="hold-bar"></div>
+        <div class="hold-idle-content">
+          <span class="hold-idle-icon">🔒</span>
+          <span class="hold-idle-text">Maintenir pour voir</span>
+          <span class="hold-idle-sub">Relâche pour cacher instantanément</span>
+        </div>
+
+        <div id="secretOverlay" class="secret-overlay">
+          <div class="secret-number" id="secretNumber">3</div>
+          <div class="secret-unit" id="secretUnit">Gorgées</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">
+        Fais ton annonce à voix haute au joueur de ton choix, puis donne-lui le téléphone !
+      </div>
+
+      <button id="btnPassPhone" class="btn-giant btn-blue">
+        <span>J'AI ANNONCÉ LE COLIS ➔</span>
+        <span class="btn-giant-sub">Passe le téléphone au Receveur</span>
+      </button>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 3 : LE DILEMME DU RECEVEUR (2 BOUTONS)  -->
+    <!-- ============================================== -->
+    <section id="screenReceiver" class="screen">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--amber); letter-spacing: 2px; text-transform: uppercase; font-weight: 800;">À ton tour</span>
+        <h2 style="font-family: var(--font-title); font-size: 2.1rem; font-weight: 900;">TU AS LE COLIS !</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 6px;">
+          L'Annonceur vient de faire son annonce. Tu as 2 options :
+        </p>
+      </div>
+
+      <div class="dilemma-stack">
+        <!-- Option 1: Inspecter -->
+        <button id="btnInspect" class="btn-giant btn-blue">
+          <span>🔍 INSPECTER</span>
+          <span class="btn-giant-sub">Tu regardes le vrai chiffre et refiles le colis</span>
+        </button>
+
+        <!-- Option 2: Tu mens ! -->
+        <button id="btnCallout" class="btn-giant btn-red">
+          <span>🚨 "TU MENS !"</span>
+          <span class="btn-giant-sub">Tu dénonces le bluff • Face-à-face immédiat !</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 4 : RÉVÉLATION & DÉCISION               -->
+    <!-- ============================================== -->
+    <section id="screenVerdict" class="screen">
+      <div class="reveal-card">
+        <div class="reveal-title">Le colis contenait en réalité</div>
+        <div class="reveal-val" id="revealVal">3 GORGÉES</div>
+        <div class="reveal-sub" id="revealSub">Tarif de base du colis</div>
+      </div>
+
+      <!-- Decision question -->
+      <div id="verdictQuestionArea">
+        <h3 class="question-title">L'Annonceur avait-il menti ?</h3>
+        <div style="display: flex; gap: 12px;">
+          <button id="btnLied" class="btn-giant btn-red" style="padding: 20px;">
+            <span>OUI, IL A MENTI !</span>
+            <span class="btn-giant-sub">Roue des multiplicateurs</span>
+          </button>
+          <button id="btnTruth" class="btn-giant btn-green" style="padding: 20px;">
+            <span>NON, VÉRITÉ !</span>
+            <span class="btn-giant-sub">Le dénonciateur trinque</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Wheel Zone (if he lied) -->
+      <div id="wheelArea" style="display: none; flex-direction: column; align-items: center;">
+        <div class="wheel-wrap">
+          <div class="wheel-arrow"></div>
+          <canvas id="wheelCanvas" width="540" height="540"></canvas>
+        </div>
+
+        <button id="btnSpin" class="btn-giant btn-red" style="margin-top: 10px;">
+          <span>🎲 TOURNER LA ROUE</span>
+        </button>
+      </div>
+
+      <!-- Result Card -->
+      <div id="resultCard" class="penalty-box" style="display: none;">
+        <div class="penalty-calc" id="penaltyCalc">3 gorgées × 1.5</div>
+        <div class="penalty-big" id="penaltyBig">5 GORGÉES</div>
+        <div class="penalty-text" id="penaltyText">L'Annonceur boit !</div>
+      </div>
+
+      <button id="btnNextRound" class="btn-secondary" style="display: none; margin-top: 16px;">
+        <span>MANCHE SUIVANTE ➔</span>
+      </button>
+    </section>
+  </div>
+
+  <script>
+    /* =====================================================================
+       AUDIO SYNTHESIZER (Pure Web Audio - 100% instant, no external files)
+       ===================================================================== */
+    class Sound {
+      constructor() {
+        this.ctx = null;
+        this.on = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      click() {
+        if (!this.on || !this.ctx) return;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(450, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.05);
+        g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.start();
+        o.stop(this.ctx.currentTime + 0.05);
+      }
+      tick() {
+        if (!this.on || !this.ctx) return;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(800, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.03);
+        g.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.03);
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.start();
+        o.stop(this.ctx.currentTime + 0.03);
+      }
+      slam() {
+        if (!this.on || !this.ctx) return;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(200, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.35);
+        g.gain.setValueAtTime(0.6, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.start();
+        o.stop(this.ctx.currentTime + 0.4);
+      }
+      cheer() {
+        if (!this.on || !this.ctx) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          const o = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          const t = this.ctx.currentTime + i * 0.08;
+          o.type = 'sine';
+          o.frequency.setValueAtTime(f, t);
+          g.gain.setValueAtTime(0.2, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+          o.connect(g);
+          g.connect(this.ctx.destination);
+          o.start(t);
+          o.stop(t + 0.28);
+        });
+      }
+    }
+
+    const sound = new Sound();
+
+    function vibrate(ms = 35) {
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate(ms); } catch (e) {}
+      }
+    }
+
+    /* =====================================================================
+       GAME STATE & WHEEL CONFIG
+       ===================================================================== */
+    const state = {
+      round: 1,
+      secretSips: 3, // 1 to 7 (7 = Cul-sec)
+      isHell: false,
+      wheelSpinning: false
+    };
+
+    // Standard Wheel (90% of rounds)
+    // Sauvé (10%), x1 (20%), x1.25 (30%), x1.5 (30%), x1.75 (10%)
+    const WHEEL_STANDARD = [
+      { label: 'SAUVÉ', mult: 0, color: '#2ed573', weight: 10, textCol: '#000' },
+      { label: '×1.0', mult: 1.0, color: '#18dcff', weight: 20, textCol: '#000' },
+      { label: '×1.25', mult: 1.25, color: '#ff9f1a', weight: 30, textCol: '#000' },
+      { label: '×1.5', mult: 1.5, color: '#ff3838', weight: 30, textCol: '#fff' },
+      { label: '×1.75', mult: 1.75, color: '#7d5fff', weight: 10, textCol: '#fff' }
+    ];
+
+    // Hell Wheel (Every 6 rounds)
+    // x2 (35%), x2.5 (30%), x3 (25%), Cul-sec imposé (10%)
+    const WHEEL_HELL = [
+      { label: '×2.0', mult: 2.0, color: '#ff3838', weight: 35, textCol: '#fff' },
+      { label: '×2.5', mult: 2.5, color: '#e84118', weight: 30, textCol: '#fff' },
+      { label: '×3.0', mult: 3.0, color: '#c23616', weight: 25, textCol: '#fff' },
+      { label: 'CUL-SEC 💀', mult: 'CUL_SEC', color: '#ff1313', weight: 10, textCol: '#fff' }
+    ];
+
+    /* =====================================================================
+       DOM ELEMENTS
+       ===================================================================== */
+    const screens = {
+      home: document.getElementById('screenHome'),
+      carrier: document.getElementById('screenCarrier'),
+      receiver: document.getElementById('screenReceiver'),
+      verdict: document.getElementById('screenVerdict')
+    };
+
+    const ui = {
+      roundPill: document.getElementById('roundPill'),
+      roundText: document.getElementById('roundText'),
+      hellCountdown: document.getElementById('hellCountdown'),
+      soundBtn: document.getElementById('soundBtn'),
+
+      // Screen 1
+      btnStartGame: document.getElementById('btnStartGame'),
+
+      // Screen 2
+      hellAlert: document.getElementById('hellAlert'),
+      holdBox: document.getElementById('holdBox'),
+      holdBar: document.getElementById('holdBar'),
+      secretOverlay: document.getElementById('secretOverlay'),
+      secretNumber: document.getElementById('secretNumber'),
+      secretUnit: document.getElementById('secretUnit'),
+      btnPassPhone: document.getElementById('btnPassPhone'),
+
+      // Screen 3
+      btnInspect: document.getElementById('btnInspect'),
+      btnCallout: document.getElementById('btnCallout'),
+
+      // Screen 4
+      revealVal: document.getElementById('revealVal'),
+      revealSub: document.getElementById('revealSub'),
+      verdictQuestionArea: document.getElementById('verdictQuestionArea'),
+      btnLied: document.getElementById('btnLied'),
+      btnTruth: document.getElementById('btnTruth'),
+      wheelArea: document.getElementById('wheelArea'),
+      wheelCanvas: document.getElementById('wheelCanvas'),
+      btnSpin: document.getElementById('btnSpin'),
+      resultCard: document.getElementById('resultCard'),
+      penaltyCalc: document.getElementById('penaltyCalc'),
+      penaltyBig: document.getElementById('penaltyBig'),
+      penaltyText: document.getElementById('penaltyText'),
+      btnNextRound: document.getElementById('btnNextRound')
+    };
+
+    function showScreen(key) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[key].classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    /* =====================================================================
+       ROUND LIFECYCLE
+       ===================================================================== */
+    function updateRoundHeader() {
+      ui.roundText.textContent = `MANCHE ${state.round}`;
+      state.isHell = (state.round % 6 === 0);
+
+      const toHell = 6 - (state.round % 6);
+      if (state.isHell) {
+        ui.roundPill.classList.add('hell');
+        ui.hellCountdown.textContent = `🔥 L'ENFER EST LÀ !`;
+        document.body.classList.add('hell-active');
+      } else {
+        ui.roundPill.classList.remove('hell');
+        ui.hellCountdown.textContent = `ENFER DANS ${toHell}`;
+        document.body.classList.remove('hell-active');
+      }
+    }
+
+    function startNewRound() {
+      updateRoundHeader();
+
+      // Secret sips 1 to 7 (7 = Cul-sec)
+      state.secretSips = Math.floor(Math.random() * 7) + 1;
+
+      // Update Screen 2 elements
+      ui.hellAlert.style.display = state.isHell ? 'block' : 'none';
+      if (state.secretSips === 7) {
+        ui.secretNumber.textContent = '💀 7';
+        ui.secretUnit.textContent = 'CUL-SEC !';
+      } else {
+        ui.secretNumber.textContent = state.secretSips;
+        ui.secretUnit.textContent = state.secretSips > 1 ? 'GORGÉES' : 'GORGÉE';
+      }
+
+      showScreen('carrier');
+    }
+
+    // Sound toggle
+    ui.soundBtn.addEventListener('click', () => {
+      sound.init();
+      sound.on = !sound.on;
+      ui.soundBtn.textContent = sound.on ? '🔊' : '🔇';
+      ui.soundBtn.style.opacity = sound.on ? '1' : '0.5';
+    });
+
+    // Start game button
+    ui.btnStartGame.addEventListener('click', () => {
+      sound.init();
+      sound.click();
+      vibrate(40);
+      state.round = 1;
+      startNewRound();
+    });
+
+    /* =====================================================================
+       HOLD TO REVEAL (Screen 2)
+       ===================================================================== */
+    let holdTimer = null;
+    const HOLD_TIME = 220; // ms
+
+    function startHolding(e) {
+      e.preventDefault();
+      sound.init();
+      vibrate(30);
+
+      ui.holdBar.style.width = '100%';
+      ui.holdBar.style.transition = `width ${HOLD_TIME}ms linear`;
+
+      holdTimer = setTimeout(() => {
+        ui.secretOverlay.style.display = 'flex';
+        vibrate(60);
+      }, HOLD_TIME);
+    }
+
+    function stopHolding(e) {
+      if (e) e.preventDefault();
+      clearTimeout(holdTimer);
+      ui.holdBar.style.transition = 'none';
+      ui.holdBar.style.width = '0%';
+      ui.secretOverlay.style.display = 'none';
+    }
+
+    ui.holdBox.addEventListener('pointerdown', startHolding);
+    ui.holdBox.addEventListener('pointerup', stopHolding);
+    ui.holdBox.addEventListener('pointercancel', stopHolding);
+    ui.holdBox.addEventListener('pointerleave', stopHolding);
+
+    // Pass phone button
+    ui.btnPassPhone.addEventListener('click', () => {
+      sound.init();
+      sound.click();
+      vibrate(40);
+      showScreen('receiver');
+    });
+
+    /* =====================================================================
+       RECEIVER DILEMMA (Screen 3)
+       ===================================================================== */
+    // Option 1: INSPECTER
+    ui.btnInspect.addEventListener('click', () => {
+      sound.init();
+      sound.click();
+      vibrate(50);
+      // Goes back to carrier screen so receiver secretly sees the number and passes it
+      showScreen('carrier');
+    });
+
+    // Option 2: "TU MENS !"
+    ui.btnCallout.addEventListener('click', () => {
+      sound.init();
+      sound.slam();
+      vibrate(80);
+
+      // Setup verdict screen
+      const real = state.secretSips;
+      if (real === 7) {
+        ui.revealVal.textContent = '💀 CUL-SEC !';
+        ui.revealSub.textContent = 'Le colis était un Cul-sec complet (7 gorgées)';
+      } else {
+        ui.revealVal.textContent = `${real} GORGÉE${real > 1 ? 'S' : ''}`;
+        ui.revealSub.textContent = `Tarif de base réel du colis`;
+      }
+
+      // Reset bottom options
+      ui.verdictQuestionArea.style.display = 'block';
+      ui.wheelArea.style.display = 'none';
+      ui.resultCard.style.display = 'none';
+      ui.btnNextRound.style.display = 'none';
+
+      showScreen('verdict');
+    });
+
+    /* =====================================================================
+       VERDICT & WHEEL RESOLUTION (Screen 4)
+       ===================================================================== */
+    // He said the TRUTH
+    ui.btnTruth.addEventListener('click', () => {
+      sound.init();
+      sound.cheer();
+      vibrate(50);
+
+      ui.verdictQuestionArea.style.display = 'none';
+      ui.wheelArea.style.display = 'none';
+      ui.resultCard.style.display = 'block';
+
+      const real = state.secretSips;
+      ui.penaltyCalc.textContent = `Tarif de base direct (sans multiplicateur) :`;
+      if (real === 7) {
+        ui.penaltyBig.textContent = `💀 CUL-SEC !`;
+      } else {
+        ui.penaltyBig.textContent = `${real} GORGÉE${real > 1 ? 'S' : ''}`;
+      }
+      ui.penaltyText.textContent = `Le dénonciateur s'est trompé : il boit !`;
+
+      ui.btnNextRound.style.display = 'flex';
+    });
+
+    // He LIED -> Show wheel!
+    ui.btnLied.addEventListener('click', () => {
+      sound.init();
+      sound.slam();
+      vibrate(60);
+
+      ui.verdictQuestionArea.style.display = 'none';
+      ui.wheelArea.style.display = 'flex';
+      initWheel();
+    });
+
+    /* =====================================================================
+       THE WHEEL (Physical deceleration & accurate angles)
+       ===================================================================== */
+    let wheelAngle = 0;
+    let wheelAnim = null;
+
+    function getSlices() {
+      return state.isHell ? WHEEL_HELL : WHEEL_STANDARD;
+    }
+
+    function initWheel() {
+      const ctx = ui.wheelCanvas.getContext('2d');
+      drawWheel(ctx, wheelAngle);
+      ui.btnSpin.disabled = false;
+      ui.btnSpin.style.opacity = '1';
+    }
+
+    function drawWheel(ctx, rotation) {
+      const width = ui.wheelCanvas.width;
+      const height = ui.wheelCanvas.height;
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = width / 2 - 14;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const slices = getSlices();
+      const totalWeight = slices.reduce((s, sl) => s + sl.weight, 0);
+
+      let start = rotation;
+
+      slices.forEach(slice => {
+        const sliceAngle = (slice.weight / totalWeight) * 2 * Math.PI;
+        const end = start + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, start, end);
+        ctx.closePath();
+
+        ctx.fillStyle = slice.color;
+        ctx.fill();
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#090a0f';
+        ctx.stroke();
+
+        // Text
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(start + sliceAngle / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = slice.textCol;
+        ctx.font = 'bold 32px "Outfit", sans-serif';
+        ctx.fillText(slice.label, radius - 20, 11);
+        ctx.restore();
+
+        start = end;
+      });
+
+      // Hub
+      ctx.beginPath();
+      ctx.arc(cx, cy, 32, 0, 2 * Math.PI);
+      ctx.fillStyle = '#090a0f';
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, 2 * Math.PI);
+      ctx.fillStyle = state.isHell ? '#ff1313' : '#ff9f1a';
+      ctx.fill();
+    }
+
+    function pickSlice(slices) {
+      const total = slices.reduce((s, sl) => s + sl.weight, 0);
+      let rand = Math.random() * total;
+      for (let i = 0; i < slices.length; i++) {
+        if (rand < slices[i].weight) return { slice: slices[i], index: i };
+        rand -= slices[i].weight;
+      }
+      return { slice: slices[0], index: 0 };
+    }
+
+    ui.btnSpin.addEventListener('click', () => {
+      if (state.wheelSpinning) return;
+      state.wheelSpinning = true;
+      sound.init();
+      vibrate(40);
+
+      ui.btnSpin.disabled = true;
+      ui.btnSpin.style.opacity = '0.5';
+
+      const slices = getSlices();
+      const totalWeight = slices.reduce((s, sl) => s + sl.weight, 0);
+      const chosen = pickSlice(slices);
+
+      let cumulative = 0;
+      for (let i = 0; i < chosen.index; i++) {
+        cumulative += (slices[i].weight / totalWeight) * 2 * Math.PI;
+      }
+      const sliceSize = (chosen.slice.weight / totalWeight) * 2 * Math.PI;
+      const targetInSlice = cumulative + sliceSize * 0.5;
+
+      // Pointer is at 12 o'clock (1.5 * PI)
+      const pointer = 1.5 * Math.PI;
+      const fullRotations = (6 + Math.floor(Math.random() * 3)) * 2 * Math.PI;
+
+      let desiredMod = (pointer - targetInSlice) % (2 * Math.PI);
+      if (desiredMod < 0) desiredMod += 2 * Math.PI;
+
+      let currentMod = wheelAngle % (2 * Math.PI);
+      let diff = desiredMod - currentMod;
+      if (diff < 0) diff += 2 * Math.PI;
+
+      const targetAngle = wheelAngle + fullRotations + diff;
+      const startAngle = wheelAngle;
+      const distance = targetAngle - startAngle;
+      const duration = 4400; // ms
+      const startTime = performance.now();
+
+      let lastTickAngle = startAngle;
+      const tickStep = (2 * Math.PI) / slices.length;
+
+      function anim(now) {
+        const elapsed = now - startTime;
+        const p = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - p, 4.5);
+        wheelAngle = startAngle + distance * easeOut;
+
+        if (Math.abs(wheelAngle - lastTickAngle) >= tickStep * 0.8) {
+          sound.tick();
+          vibrate(20);
+          lastTickAngle = wheelAngle;
+        }
+
+        const ctx = ui.wheelCanvas.getContext('2d');
+        drawWheel(ctx, wheelAngle);
+
+        if (p < 1) {
+          wheelAnim = requestAnimationFrame(anim);
+        } else {
+          wheelAngle = targetAngle;
+          drawWheel(ctx, wheelAngle);
+          state.wheelSpinning = false;
+          onWheelStop(chosen.slice);
+        }
+      }
+
+      wheelAnim = requestAnimationFrame(anim);
+    });
+
+    function onWheelStop(slice) {
+      sound.slam();
+      vibrate(80);
+
+      const base = state.secretSips;
+      ui.resultCard.style.display = 'block';
+
+      if (slice.mult === 0) {
+        // Sauvé !
+        sound.cheer();
+        ui.penaltyCalc.textContent = `Chance insolente (case Sauvé 10%) :`;
+        ui.penaltyBig.textContent = `🛡️ 0 GORGÉE !`;
+        ui.penaltyBig.style.color = '#2ed573';
+        ui.penaltyText.textContent = `L'Annonceur est sauvé par miracle !`;
+      } else if (slice.mult === 'CUL_SEC') {
+        ui.penaltyCalc.textContent = `Sanction Suprême de l'Enfer :`;
+        ui.penaltyBig.textContent = `💀 CUL-SEC !`;
+        ui.penaltyBig.style.color = '#ff1313';
+        ui.penaltyText.textContent = `L'Annonceur vide son verre d'un coup !`;
+      } else {
+        // Math.ceil (arrondi supérieur)
+        const total = Math.ceil(base * slice.mult);
+        ui.penaltyCalc.textContent = `${base} gorgée${base > 1 ? 's' : ''} × ${slice.label} = ${base * slice.mult} (arrondi sup.) :`;
+        ui.penaltyBig.textContent = `${total} GORGÉES`;
+        ui.penaltyBig.style.color = '#ff3838';
+        ui.penaltyText.textContent = `L'Annonceur a menti : il boit ses ${total} gorgées !`;
+      }
+
+      ui.btnNextRound.style.display = 'flex';
+    }
+
+    // Next round
+    ui.btnNextRound.addEventListener('click', () => {
+      sound.init();
+      sound.click();
+      vibrate(40);
+      state.round += 1;
+      startNewRound();
+    });
+
+    // Init
+    updateRoundHeader();
+  </script>
+</body>
+</html>
